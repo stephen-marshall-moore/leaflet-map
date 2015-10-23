@@ -747,15 +747,25 @@ add a marker with a popup text.
 
 		_fitToMarkers: function () {
 			if ( this.map && this.fitToMarkers) {
-				var bounds = [];
+				var box = null;
 				for( var i = 0, f; f = this.children[i]; i++ ) {
-					if ( f.latitude && f.longitude ) {
-						bounds.push( [ f.latitude, f.longitude ] );
-					}
+          if( box ) {
+            if ( f.feature && typeof f.feature.getBounds == 'function') {
+              box.extend( f.feature.getBounds() );
+            } else if (f.feature && typeof f.feature.getLatLng == 'function') {
+              box.extend( f.feature.getLatLng() );
+            }
+          } else {
+            if (f.feature && typeof f.feature.getBounds == 'function') {
+              box = f.feature.getBounds();
+            } else if (f.feature && typeof f.feature.getLatLng == 'function') {
+              box = L.latLngBounds( [f.feature.getLatLng()] );
+            }
+          }
 				}
-				if ( bounds.length > 0 ) {
-					this.map.fitBounds( bounds );
-					this.map.invalidateSize();
+				if ( box && box.isValid() ) {
+					  this.map.fitBounds( box );
+					  this.map.invalidateSize();
 				}
 			}
 		},
